@@ -35,7 +35,7 @@ public class DicClient {
         boolean player1 = true;
 
         boolean gameEnded = false;
-
+        Scanner in = new Scanner(System.in);
         while(!gameEnded) {
             drawBoard(board);
 
