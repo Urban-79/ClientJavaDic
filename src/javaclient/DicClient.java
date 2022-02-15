@@ -16,10 +16,168 @@ import java.io.PrintWriter;
 import java.net.UnknownHostException;
 
 public class DicClient {
-
     public final static String SERVER = "127.0.0.1";
     public final static int PORT = 5000;
     public final static int TIMEOUT = 30000;
+
+    public static void main(String[] args) {
+        char[][] board = new char[3][3];
+
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                board[i][j] = '-';
+            }
+        }
+
+        String p1 = "J1";
+        String p2 = "J2";
+
+        boolean player1 = true;
+
+        boolean gameEnded = false;
+
+        while(!gameEnded) {
+            drawBoard(board);
+
+            if(player1) {
+                System.out.println(p1 + "'s Turn (x):");
+            } else {
+                System.out.println(p2 + "'s Turn (o):");
+            }
+
+            char c = '-';
+            if(player1) {
+                c = 'x';
+            } else {
+                c = 'o';
+            }
+
+            int row = 0;
+            int col = 0;
+
+            while(true) {
+                System.out.print("Entrer un numéro de ligne (0, 1, or 2): ");
+                row = in.nextInt();
+                System.out.print("Entrer un numéro de colonne (0, 1, or 2): ");
+                col = in.nextInt();
+
+                if(row < 0 || col < 0 || row > 2 || col > 2) {
+                    System.out.println("La case choisie est hors limite.");
+                } else if(board[row][col] != '-') {
+                    System.out.println("Quelqu'un à déjà joué sur cette case.");
+                } else {
+                    break;
+                }
+
+            }
+
+            board[row][col] = c;
+
+            if(playerHasWon(board) == 'x') {
+                System.out.println(p1 + " à gagné !");
+                gameEnded = true;
+            } else if(playerHasWon(board) == 'o') {
+                System.out.println(p2 + " à gagné !");
+                gameEnded = true;
+            } else {
+                if(boardIsFull(board)) {
+                    System.out.println("C'est une égalité");
+                    gameEnded = true;
+                } else {
+                    player1 = !player1;
+                }
+
+            }
+
+        }
+        drawBoard(board);
+
+        /*String[] items = new String[2];
+        items[0] =  player;
+        items[1] =  content;
+            if(items.length>1) {
+                try {
+                    request(addr, "POST", items[0], items[1]);
+                    request(addr, "GET", "", "");
+                }
+                catch(IOException e) {
+                    System.err.println(e.getMessage());
+                }
+            }*/
+    }
+
+    public static void drawBoard(char[][] board) {
+        System.out.println("Board:");
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                System.out.print(board[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    public static char playerHasWon(char[][] board) {
+
+        for(int i = 0; i < 3; i++) {
+            if(board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != '-') {
+                return board[i][0];
+            }
+        }
+
+        for(int j = 0; j < 3; j++) {
+            if(board[0][j] == board[1][j] && board[1][j] == board[2][j] && board[0][j] != '-') {
+                return board[0][j];
+            }
+        }
+
+        if(board[0][0] == board[1][1] && board[1][1] == board[2][2] && board[0][0] != '-') {
+            return board[0][0];
+        }
+        if(board[2][0] == board[1][1] && board[1][1] ==  board[0][2] && board[2][0] != '-') {
+            return board[2][0];
+        }
+
+        return ' ';
+    }
+
+    //Make a function to check if all of the positions on the board have been filled
+    public static boolean boardIsFull(char[][] board) {
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                if(board[i][j] == '-') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void request(SocketAddress addr, String verb, String url, String content) throws IOException
+    {
+        Socket socket = new Socket();
+
+        socket.connect(addr, TIMEOUT);
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
+
+        pw.printf("%s /%s HTTP/1.1\r\n", verb, url);
+        pw.printf("Content-Type: text/plain\r\n");
+        pw.printf("Content-Length: %d\r\n\r\n", content.length());
+        pw.printf("%s\r\n", content);
+        pw.flush();
+
+        String tmp;
+
+        while((tmp=br.readLine())!=null){
+            System.out.println(tmp);
+        }
+        pw.close();
+        br.close();
+        socket.close();
+    }
+}
+   /*
 
     public static void main(String[] args) throws UnknownHostException {
         SocketAddress addr = new InetSocketAddress(InetAddress.getByName(SERVER), PORT);
@@ -75,8 +233,10 @@ public class DicClient {
             if(content.equalsIgnoreCase("q")) {
                 break;
             }
-            String[] exploded2;
+
+            String[] exploded2 = caseJ2.split(",");
             String[] exploded1 = caseJ1.split(",");
+
             if(player.equals("J1")){
                 caseJ1 += content+",";
                 content = caseJ1;
@@ -86,68 +246,36 @@ public class DicClient {
                 content = caseJ2;
                 exploded2 = caseJ2.split(",");
             }
-            for(int z=0; exploded1.length; z++){
-                System.out.println(exploded1[z]);
-            }
-            if(i >= 5){
-                System.out.println("on est dans le if");
-                String winJ1 = "n";
-                String winJ2 = "n";
+            System.out.println(Arrays.toString(exploded1));
+            System.out.println(Arrays.toString(exploded2));
+            //if(i >= 5){
+
                 for(int k = 0; k <= 7; k++){
+                    System.out.println(Arrays.toString(win[k]));
                     if(player.equals("J2")){
+                        System.out.println("on test si j2 à gg");
                         if(Arrays.equals(win[k], exploded1)){
                             System.out.println("T'as gagné champion "+player);
-                            winJ1 = "o";
+                        }else{
+                            System.out.println("j2 à perdu");
                         }
                     }else{
+                        System.out.println("on test si j1 à gg");
                         if(Arrays.equals(win[k], exploded2)){
                             System.out.println("T'as gagné champion "+player);
-                            winJ2 = "o";
+                        }else{
+                            System.out.println("j1 à perdu");
                         }
                     }
                 }
-            }
+            //}
 
 
 
-            String[] items = new String[2];
-            items[0] =  player;
-            items[1] =  content;
-            /*if(items.length>1) {
-                try {
-                    request(addr, "POST", items[0], items[1]);
-                    request(addr, "GET", "", "");
-                }
-                catch(IOException e) {
-                    System.err.println(e.getMessage());
-                }
-            }*/
+
         }
         sc.close();
-    }
+    }*/
 
-    public static void request(SocketAddress addr, String verb, String url, String content) throws IOException
-    {
-        Socket socket = new Socket();
-
-        socket.connect(addr, TIMEOUT);
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        PrintWriter pw = new PrintWriter(socket.getOutputStream(), true);
-
-        pw.printf("%s /%s HTTP/1.1\r\n", verb, url);
-        pw.printf("Content-Type: text/plain\r\n");
-        pw.printf("Content-Length: %d\r\n\r\n", content.length());
-        pw.printf("%s\r\n", content);
-        pw.flush();
-
-        String tmp;
-
-        while((tmp=br.readLine())!=null){
-            System.out.println(tmp);
-        }
-        pw.close();
-        br.close();
-        socket.close();
-    }
-}
+    /**/
+//}
